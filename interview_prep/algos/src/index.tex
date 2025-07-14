@@ -190,3 +190,53 @@ The problem we will be looking at is \textit{Largest Rectangle in Histogram} on 
 \section{Graphs}
 
 \section{Dynamic Programming}
+Dynamic programming is a technique for solving optimization problems by breaking them down into smaller subproblems and storing
+the results to avoid redundant calculations. The key insight is that the optimal solution to a problem can be constructed from 
+optimal solutions to its subproblems.\\
+\\
+The problem we'll examine is representing a positive integer as a sum of numbers containing only 1s (like 1, 11, 111, 1111, etc.)
+while minimizing the total count of digit '1's used. This is a variant of the classic coin change problem.\\
+\\
+The approach is as follows:
+\begin{itemize}
+    \item Generate all valid "coins" (numbers with only 1s): 1, 11, 111, 1111, etc. These follow the pattern $\frac{10^k - 1}{9}$ for $k = 1, 2, 3, ...$
+    \item Use DP where \texttt{dp[i]} represents the minimum number of 1s needed to represent number $i$
+    \item For each number $i$, try all valid coins $\leq i$ and take the minimum: \texttt{dp[i] = min(dp[i-coin] + digits\_in\_coin)}
+    \item The answer for $n$ is \texttt{dp[n]}
+\end{itemize}
+
+\begin{lstlisting}[language=Python, caption=Minimum 1s Representation]
+def min_ones_sum(n: int) -> int:
+    # Generate numbers with only 1s up to n
+    ones_numbers = []
+    current = 1
+    while current <= n:
+        ones_numbers.append(current)
+        current = current * 10 + 1
+    
+    # DP array: dp[i] = minimum 1s needed for number i
+    dp = [float('inf')] * (n + 1)
+    dp[0] = 0
+    
+    for i in range(1, n + 1):
+        for ones_num in ones_numbers:
+            if ones_num > i:
+                break
+            # Count digits in ones_num (number of 1s)
+            digits = len(str(ones_num))
+            dp[i] = min(dp[i], dp[i - ones_num] + digits)
+    
+    return dp[n]
+
+# Example usage:
+# min_ones_sum(121) would find the minimum 1s needed
+# One possible representation: 121 = 111 + 11 + (-1) is invalid
+# Valid representation: 121 = 111 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 = 12 ones
+# Better: 121 = 111 + 11 + (-1) is invalid, but 121 = 111 + 11 + (-1) doesn't work
+# Actually: 121 = 111 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 = 12 ones total
+# Or: 121 = 11*11 = 11 + 11 + 11 + 11 + 11 + 11 + 11 + 11 + 11 + 11 + 11 = 22 ones
+# The optimal might be different - the algorithm finds the true minimum
+\end{lstlisting}
+
+Time complexity: $O(n \cdot \log_{10}(n))$ where the $\log_{10}(n)$ factor comes from the number of valid "ones" numbers up to $n$.
+Space complexity: $O(n)$ for the DP array.
